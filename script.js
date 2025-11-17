@@ -70,6 +70,12 @@ channel.bind("update", function (data) {
     }
   }
 
+  // Layout switch: jika operator minta layout B, pindah ke index-B.html
+  if (data.layout === "B" && !window.location.pathname.endsWith("index-B.html")) {
+    window.location.href = "index-B.html";
+    return;
+  }
+
   if (typeof data.scoreLeftColor === "string" && data.scoreLeftColor.trim() !== "") {
     slideEl?.style.setProperty("--score-left-color", data.scoreLeftColor);
   }

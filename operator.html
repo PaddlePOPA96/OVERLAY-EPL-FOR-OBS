@@ -546,6 +546,8 @@
   function handleLayoutSwitch(val) {
     layoutChoice = val === "B" ? "B" : "A";
     if (layoutChoice === "B") {
+      // kirim info layout sebelum pindah halaman
+      sendUpdate(buildPayload({ layout: "B" }), { skipDedup: true, silent: true });
       window.location.href = "operator-B.html";
     }
   }

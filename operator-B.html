@@ -432,18 +432,10 @@ function stopLocalTimer() {
 
 // kirim ke Netlify Function -> Pusher
 async function broadcast(data) {
-  await fetch("/.netlify/functions/trigger", {
+  await fetch("/.netlify/functions/pusher-update", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      app_id: "2075303",
-      key: PUSHER_KEY,
-      secret: "bac0087f9722a2f6256b",
-      cluster: PUSHER_CLUSTER,
-      channel: channelName,
-      event: "update",
-      data: { ...data, layout: layoutChoice }
-    })
+    body: JSON.stringify({ ...data, layout: layoutChoice })
   });
 }
 
@@ -644,9 +636,21 @@ renderAll();
 function handleLayoutSwitch(val) {
   layoutChoice = val === "A" ? "A" : "B";
   if (layoutChoice === "A") {
+    // kirim info layout sebelum pindah halaman
+    broadcast({
+      homeScore,
+      awayScore,
+      elapsedSeconds,
+      timerRunning,
+      period,
+      layout: "A",
+    });
     window.location.href = "operator.html";
   }
 }
+
+// broadcast awal biar viewer pindah ke layout B
+syncNow();
 </script>
 
 </body>
