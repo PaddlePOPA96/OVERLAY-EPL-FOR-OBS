@@ -32,15 +32,16 @@
 
     .slide16-9 {
       position: absolute;
+      left: 50%;
+      top: 50%;
       width: var(--overlay-width);
       height: var(--overlay-height);
       overflow: hidden;
-      margin: 0 auto;
       background:transparent;
       --score-left-color: #a40606;
       --score-right-color: #a40606;
-      transform: scale(var(--overlay-scale));
-      transform-origin: top left;
+      transform: translate(-50%, -50%) scale(var(--overlay-scale));
+      transform-origin: center center;
     }
 
     .scoreboard {
@@ -361,6 +362,7 @@
   </style>
 </head>
 <body>
+  <div class="overlay-frame">
   <div class="slide16-9">
     <div class="scoreboard">
 
@@ -394,6 +396,7 @@
         <div id="goal-team-name" class="goal-team">TEAM</div>
       </div>
     </div>
+  </div>
   </div>
 </body>
 </html>
