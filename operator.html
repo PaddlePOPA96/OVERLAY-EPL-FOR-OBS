@@ -266,8 +266,8 @@
       </div>
       <div class="score score-left" id="homeScorePreview">0</div>
       <div class="score score-right" id="awayScorePreview">0</div>
-      <div class="team-name-preview team-left" id="teamLeftPreview">MAN</div>
-      <div class="team-name-preview team-right" id="teamRightPreview">WHU</div>
+      <div class="team-name-preview team-left" id="teamLeftPreview">TIM1</div>
+      <div class="team-name-preview team-right" id="teamRightPreview">TIM2</div>
     </div>
   </div>
 
@@ -349,6 +349,8 @@
   let timerRunning = false;
   let firstSyncSent = false;
   let liveTickLocal = true;
+  let timerStartMs = null;
+  let timerBaseSeconds = 0;
   const COOLDOWN_MS = 900;
   const SYNC_DELAY = 250;
 
@@ -373,11 +375,7 @@
     const teamRight = document.getElementById("teamRight").value.trim() || "WHU";
     const scoreLeft = document.getElementById("scoreLeft").value || "0";
     const scoreRight = document.getElementById("scoreRight").value || "0";
-    const mm = Math.max(0, parseInt(document.getElementById("timeMinute").value || "0", 10));
-    const ssRaw = parseInt(document.getElementById("timeSecond").value || "0", 10);
-    const ss = Math.min(59, Math.max(0, isNaN(ssRaw) ? 0 : ssRaw));
-    const time = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
-    document.getElementById("timeSecond").value = ss;
+    const { mm, ss, time } = getTimeParts();
     const colorLeft = document.getElementById("scoreLeftColor").value || "#a40606";
     const colorRight = document.getElementById("scoreRightColor").value || "#a40606";
 
@@ -398,7 +396,17 @@
     board?.style.setProperty("--accent-right", colorRight);
   }
 
+  function getTimeParts() {
+    const mm = Math.max(0, parseInt(document.getElementById("timeMinute").value || "0", 10));
+    const ssRaw = parseInt(document.getElementById("timeSecond").value || "0", 10);
+    const ss = Math.min(59, Math.max(0, isNaN(ssRaw) ? 0 : ssRaw));
+    document.getElementById("timeSecond").value = ss;
+    const time = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+    return { mm, ss, time };
+  }
+
   function buildPayload(extra = {}) {
+    const { mm, ss, time } = getTimeParts();
     return {
       teamLeft: document.getElementById("teamLeft").value.trim(),
       teamRight: document.getElementById("teamRight").value.trim(),
@@ -406,7 +414,10 @@
       scoreRight: document.getElementById("scoreRight").value,
       scoreLeftColor: document.getElementById("scoreLeftColor").value,
       scoreRightColor: document.getElementById("scoreRightColor").value,
-      time: `${String(document.getElementById("timeMinute").value || "0").padStart(2, "0")}:${String(document.getElementById("timeSecond").value || "0").padStart(2, "0")}`,
+      time,
+      timeRunning: timerRunning,
+      timeStartMs: timerStartMs,
+      timeBaseSeconds: timerBaseSeconds,
       visible: visibleState,
       ...extra,
     };
@@ -519,6 +530,9 @@
     if (timerRunning) return;
     liveTickLocal = true;
     timerRunning = true;
+    const { mm, ss } = getTimeParts();
+    timerBaseSeconds = mm * 60 + ss;
+    timerStartMs = Date.now();
     document.getElementById("timerState").textContent = "⏱ Running";
     timerInterval = setInterval(tickTimer, 1000);
     // push sekali untuk sinkron awal
@@ -539,6 +553,8 @@
     pauseTimer();
     document.getElementById("timerState").textContent = "Reset";
     liveTickLocal = true;
+    timerStartMs = null;
+    timerBaseSeconds = 0;
   }
 
   function tickTimer() {

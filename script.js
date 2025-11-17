@@ -14,6 +14,10 @@ const channel = pusher.subscribe("scoreboard-channel");
 
 let goalTimeout;
 let lastVisibility = true;
+let timeInterval;
+let timeBaseSeconds = 0;
+let timeStartMs = null;
+let timeRunning = false;
 
 // Handler ketika ada event "update" dari Netlify Function
 channel.bind("update", function (data) {
@@ -55,7 +59,15 @@ channel.bind("update", function (data) {
 
   // Update waktu
   if (typeof data.time === "string" && data.time.trim() !== "") {
-    timeEl.textContent = data.time;
+    if (data.timeRunning) {
+      timeBaseSeconds = Number(data.timeBaseSeconds || 0);
+      timeStartMs = data.timeStartMs || Date.now();
+      timeRunning = true;
+      startOverlayTimer(timeEl);
+    } else {
+      stopOverlayTimer();
+      timeEl.textContent = data.time;
+    }
   }
 
   if (typeof data.scoreLeftColor === "string" && data.scoreLeftColor.trim() !== "") {
@@ -130,4 +142,24 @@ function replayEntranceAnimations() {
     void el.offsetHeight;
     el.style.animation = "";
   });
+}
+
+function startOverlayTimer(timeEl) {
+  stopOverlayTimer();
+  updateOverlayTime(timeEl);
+  timeInterval = setInterval(() => updateOverlayTime(timeEl), 1000);
+}
+
+function stopOverlayTimer() {
+  clearInterval(timeInterval);
+  timeInterval = null;
+}
+
+function updateOverlayTime(timeEl) {
+  if (!timeRunning || !timeEl) return;
+  const elapsedSec = Math.floor((Date.now() - timeStartMs) / 1000);
+  const total = timeBaseSeconds + elapsedSec;
+  const mm = Math.floor(total / 60);
+  const ss = total % 60;
+  timeEl.textContent = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
 }
