@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Scoreboard OBS Overlay (Client)</title>
+<style>
+  :root {
+    --center-bg: #ffffff;
+    --score-bg: #f3f3f3;
+    --home-bg: #111111;
+    --away-bg: #111111;
+  }
+
+  * {
+    box-sizing: border-box;
+    background: transparent; /* PENTING buat OBS overlay */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  body {
+    margin: 0;
+    background: transparent; /* PENTING buat OBS overlay */
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px;
+  }
+
+  .overlay-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* .scoreboard-wrapper {
+    position: relative;
+    padding: 10px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--home-bg) 0 50%, var(--away-bg) 50% 100%);
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  } */
+
+ /* ANIMASI INTRO OVERLAY – efek Smart Animate seperti Figma */
+.scoreboard-wrapper.animate-in .teams-panel {
+  opacity: 0;
+  transform-origin: center center;
+  animation: midReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards 0s;
+}
+
+.scoreboard-wrapper.animate-in .score-panel {
+  opacity: 0;
+  transform-origin: left center; /* keluar dari belakang tengah ke kanan */
+  animation: rightReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards 0.45s;
+}
+
+.scoreboard-wrapper.animate-in .time-panel {
+  opacity: 0;
+  transform-origin: right center; /* keluar dari belakang tengah ke kiri */
+  animation: leftReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards 0.55s;
+}
+
+/* Tengah: zoom in halus seperti Smart Animate */
+@keyframes midReveal {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+    filter: blur(8px);
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+/* Kanan: “kebuka” dari belakang tengah ke kanan */
+@keyframes rightReveal {
+  0% {
+    transform: scaleX(0.2) translateX(-20px);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  70% {
+    transform: scaleX(1.05) translateX(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    transform: scaleX(1) translateX(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* Kiri: “kebuka” dari belakang tengah ke kiri */
+@keyframes leftReveal {
+  0% {
+    transform: scaleX(0.2) translateX(20px);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  70% {
+    transform: scaleX(1.05) translateX(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    transform: scaleX(1) translateX(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+
+  .scoreboard-wrapper.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .scoreboard {
+    width: 860px;
+    max-width: 100%;
+    aspect-ratio: 16 / 5;
+    background: #000;
+    display: grid;
+    grid-template-columns: 2fr 1.8fr 1.8fr;
+    overflow: hidden;
+    border-radius: 8px;
+    position: relative;
+  }
+
+  .time-panel {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  transform-origin: right center; /* keluar dari belakang tengah */
+}
+
+.score-panel {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  transform-origin: left center; /* keluar dari belakang tengah */
+}
+
+  .time-top {
+    background: #004535;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 42px;
+  }
+
+  .time-bottom {
+    background: #f8f8f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 700;
+  }
+
+  .teams-panel {
+    background: var(--center-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    position: relative;
+  }
+
+  /* .teams-panel::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 25%;
+    bottom: 25%;
+    width: 10px;
+    background: #ff4b4b;
+  } */
+
+  .team-logo {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px rgba(0,0,0,0.4));
+  }
+
+  .score-panel {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    font-weight: 700;
+  }
+
+  .score-row.home-row {
+    background: #ff4b4b;
+    color: #fff;
+  }
+
+  .score-row.away-row {
+    background: #e5e5e5;
+    color: #000;
+    position: relative;
+  }
+
+  /* .score-row.away-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 4px;
+    background: #000;
+  } */
+
+  /* ANIMASI GOAL */
+  .goal-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    background: rgba(255, 0, 0, 0.95);
+    z-index: 2;
+  }
+
+  .goal-overlay span {
+    font-size: 72px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 6px;
+    text-shadow: 0 0 20px rgba(0,0,0,0.9);
+  }
+
+  .goal-overlay.show {
+    animation: goalBg 3s ease-in-out forwards;
+  }
+
+  .goal-overlay.show span {
+    animation: goalText 3s ease-in-out forwards;
+    animation-delay: 0.1s;
+  }
+
+  @keyframes goalBg {
+    0%   { opacity: 0; }
+    10%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes goalText {
+    0%   { opacity: 0; transform: scale(0.4); }
+    20%  { opacity: 1; transform: scale(1.2); }
+    60%  { opacity: 1; transform: scale(1.0); }
+    100% { opacity: 0; transform: scale(1.1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="overlay-container">
+  <div class="scoreboard-wrapper" id="scoreboardWrapper">
+    <div class="scoreboard">
+      <div class="time-panel">
+        <div class="time-top">CHECKVAR</div>
+        <div class="time-bottom" id="timeDisplay">00:00</div>
+      </div>
+
+      <div class="teams-panel">
+        <img id="homeLogo" class="team-logo"
+          src="https://upload.wikimedia.org/wikipedia/id/thumb/0/0c/Liverpool_FC.svg/370px-Liverpool_FC.svg.png"/>
+        <img id="awayLogo" class="team-logo"
+          src="https://upload.wikimedia.org/wikipedia/id/thumb/e/eb/Manchester_City_FC_badge.svg/400px-Manchester_City_FC_badge.svg.png"/>
+      </div>
+
+      <div class="score-panel">
+        <div class="score-row home-row"><span id="homeScore">0</span></div>
+        <div class="score-row away-row"><span id="awayScore">0</span></div>
+      </div>
+    </div>
+
+    <div class="goal-overlay" id="goalOverlay"><span id="goalText">GOAL!</span></div>
+  </div>
+</div>
+
+
+<script src="https://js.pusher.com/8.2/pusher.min.js"></script>
+<script>
+Pusher.logToConsole = false;
+const PUSHER_KEY = "5f34f9c43667f7213afb";
+const PUSHER_CLUSTER = "ap1";
+const channelName = "scoreboard-channel";
+
+const pusher = new Pusher(PUSHER_KEY, {
+  cluster: PUSHER_CLUSTER,
+  forceTLS: true
+});
+const channel = pusher.subscribe(channelName);
+
+let overlayVisible = true;
+let lastIntroId = null;
+
+// STATE CLIENT (mirror dari operator)
+let homeScore = 0, awayScore = 0;
+let elapsedSeconds = 0;
+let timerInterval = null;
+let timerRunning = false;
+let period = 1;
+let lastGoalId = null;
+
+function startLocalTimer() {
+  if (timerInterval) return;
+  timerInterval = setInterval(() => {
+    elapsedSeconds++;
+    renderTimer();
+  }, 1000);
+}
+
+function stopLocalTimer() {
+  if (!timerInterval) return;
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+// Terima update dari operator
+channel.bind("update", (data) => {
+  if (!data) return;
+
+  const prevRunning = timerRunning;
+
+  if (data.homeScore !== undefined) homeScore = data.homeScore;
+  if (data.awayScore !== undefined) awayScore = data.awayScore;
+  if (data.elapsedSeconds !== undefined) elapsedSeconds = data.elapsedSeconds;
+  if (data.timerRunning !== undefined) timerRunning = data.timerRunning;
+  if (data.period !== undefined) period = data.period;
+
+  if (data.homeLogo) document.getElementById("homeLogo").src = data.homeLogo;
+  if (data.awayLogo) document.getElementById("awayLogo").src = data.awayLogo;
+
+  // 🔹 kontrol show/hide + animasi dari operator
+  const wrapper = document.getElementById("scoreboardWrapper");
+
+  if (data.overlayVisible !== undefined) {
+    overlayVisible = data.overlayVisible;
+    if (!overlayVisible) {
+      wrapper.classList.add("hidden");
+    } else {
+      wrapper.classList.remove("hidden");
+    }
+  }
+
+  if (data.introId && data.introId !== lastIntroId) {
+    lastIntroId = data.introId;
+    playIntro();
+  }
+
+  if (data.goalId && data.goalId !== lastGoalId && data.goalTeam) {
+    lastGoalId = data.goalId;
+    showGoal(data.goalTeam);
+  }
+
+  // sinkron timer lokal
+  if (timerRunning && !prevRunning) {
+    startLocalTimer();
+  } else if (!timerRunning && prevRunning) {
+    stopLocalTimer();
+  }
+
+  renderAll();
+});
+
+function renderTimer() {
+  const m = Math.floor(elapsedSeconds / 60);
+  const s = elapsedSeconds % 60;
+  document.getElementById("timeDisplay").textContent =
+    `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function renderAll() {
+  document.getElementById("homeScore").textContent = homeScore;
+  document.getElementById("awayScore").textContent = awayScore;
+  renderTimer();
+}
+
+/* ANIMASI GOAL */
+function showGoal(team) {
+  const overlay = document.getElementById("goalOverlay");
+  const textEl = document.getElementById("goalText");
+
+  textEl.textContent = "GOAL!";
+
+  overlay.classList.remove("show");
+  void overlay.offsetWidth;
+  overlay.classList.add("show");
+
+  setTimeout(() => {
+    overlay.classList.remove("show");
+  }, 3000);
+}
+
+/* ANIMASI INTRO (dari operator) */
+function playIntro() {
+  const wrapper = document.getElementById("scoreboardWrapper");
+  wrapper.classList.remove("animate-in");
+  // force reflow biar animasi bisa restart
+  void wrapper.offsetWidth;
+  wrapper.classList.add("animate-in");
+
+  // habis animasi, lepas class biar bisa dipakai lagi
+  setTimeout(() => {
+    wrapper.classList.remove("animate-in");
+  }, 1200);
+}
+
+// Toggle overlay dari keyboard (misal di OBS pakai hotkey "h")
+window.addEventListener("keydown", e => {
+  if (e.key === "h" || e.key === "H") toggleOverlay();
+});
+
+function toggleOverlay() {
+  document.getElementById("scoreboardWrapper").classList.toggle("hidden");
+}
+
+renderAll();
+</script>
+
+
+</body>
+</html>

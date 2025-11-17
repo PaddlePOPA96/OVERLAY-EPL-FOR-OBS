@@ -275,6 +275,15 @@
 <div class="controls">
 
     <div class="controls-section">
+      <label>Layout</label>
+      <select id="layoutChoice" onchange="handleLayoutSwitch(this.value)" style="padding:4px 8px;">
+        <option value="A" selected>Layout A</option>
+        <option value="B">Layout B</option>
+      </select>
+      <span class="tiny-label">Pilih B untuk pindah ke operator-B</span>
+    </div>
+
+    <div class="controls-section">
       <label>Team Left</label>
       <input id="teamLeft" type="text" placeholder="MAN" oninput="handleChange()" />
     </div>
@@ -351,6 +360,7 @@
   let liveTickLocal = true;
   let timerStartMs = null;
   let timerBaseSeconds = 0;
+  let layoutChoice = "A";
   const COOLDOWN_MS = 900;
   const SYNC_DELAY = 250;
 
@@ -424,6 +434,7 @@
       timeRunning: timerRunning,
       timeStartMs: timerStartMs,
       timeBaseSeconds: timerBaseSeconds,
+      layout: layoutChoice,
       visible: visibleState,
       ...extra,
     };
@@ -529,6 +540,13 @@
       pauseTimer();
     } else {
       startTimer();
+    }
+  }
+
+  function handleLayoutSwitch(val) {
+    layoutChoice = val === "B" ? "B" : "A";
+    if (layoutChoice === "B") {
+      window.location.href = "operator-B.html";
     }
   }
 
