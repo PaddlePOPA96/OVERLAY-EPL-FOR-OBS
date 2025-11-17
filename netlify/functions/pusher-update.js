@@ -16,9 +16,18 @@ const pusher = new Pusher({
   useTLS: true,
 });
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 exports.handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers: corsHeaders, body: "" };
+  }
+
   if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
+    return { statusCode: 405, headers: corsHeaders, body: "Method Not Allowed" };
   }
 
   try {
@@ -28,13 +37,15 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers: corsHeaders,
       body: JSON.stringify({ ok: true }),
     };
   } catch (err) {
     console.error("Pusher error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to push update" }),
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Failed to push update", detail: err?.message }),
     };
   }
 };
