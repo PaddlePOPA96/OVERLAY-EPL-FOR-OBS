@@ -34,6 +34,11 @@
     align-items: center;
   }
 
+  .scoreboard-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
   /* .scoreboard-wrapper {
     position: relative;
     padding: 10px;
@@ -239,8 +244,9 @@
     justify-content: center;
     pointer-events: none;
     opacity: 0;
-    background: rgba(255, 0, 0, 0.95);
-    z-index: 2;
+    background: rgba(255, 0, 0, 0.9);
+    z-index: 3;
+    border-radius: 8px;
   }
 
   .goal-overlay span {
@@ -249,6 +255,9 @@
     color: #fff;
     letter-spacing: 6px;
     text-shadow: 0 0 20px rgba(0,0,0,0.9);
+    text-align: center;
+    padding: 12px 20px;
+    border-radius: 6px;
   }
 
   .goal-overlay.show {
