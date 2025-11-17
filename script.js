@@ -58,19 +58,18 @@ channel.bind("update", function (data) {
     timeEl.textContent = data.time;
   }
 
-  // Update warna score
   if (typeof data.scoreLeftColor === "string" && data.scoreLeftColor.trim() !== "") {
-    scoreLeftEl.style.color = data.scoreLeftColor;
+    slideEl?.style.setProperty("--score-left-color", data.scoreLeftColor);
   }
 
   if (typeof data.scoreRightColor === "string" && data.scoreRightColor.trim() !== "") {
-    scoreRightEl.style.color = data.scoreRightColor;
+    slideEl?.style.setProperty("--score-right-color", data.scoreRightColor);
   }
 
   if (typeof data.visible === "boolean") {
     lastVisibility = data.visible;
   }
-  applyVisibility(slideEl, lastVisibility);
+  applyVisibility(slideEl, lastVisibility, data.replayEntrance);
 
   if (data.eventType === "goal") {
     playGoalAnimation({
@@ -85,9 +84,13 @@ channel.bind("update", function (data) {
   }
 });
 
-function applyVisibility(slideEl, isVisible) {
+function applyVisibility(slideEl, isVisible, replay) {
   if (!slideEl) return;
   slideEl.classList.toggle("hide-scoreboard", !isVisible);
+
+  if (isVisible && replay) {
+    replayEntranceAnimations();
+  }
 }
 
 function playGoalAnimation({
@@ -114,4 +117,16 @@ function playGoalAnimation({
     slideEl.classList.remove("goal-mode");
     applyVisibility(slideEl, lastVisibility);
   }, durationMs);
+}
+
+function replayEntranceAnimations() {
+  const elements = document.querySelectorAll(
+    ".bars-wrapper, .epl-logo, .team-name, .score, .time-panel"
+  );
+  elements.forEach((el) => {
+    el.style.animation = "none";
+    // force reflow
+    void el.offsetHeight;
+    el.style.animation = "";
+  });
 }

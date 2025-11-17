@@ -9,6 +9,8 @@
     --score-bg: #f3f3f3;
     --home-bg: #111111;
     --away-bg: #111111;
+    --accent-left: #a40606;
+    --accent-right: #a40606;
   }
 
   * {
@@ -40,126 +42,124 @@
     gap: 10px;
   }
 
-  /* PREVIEW SCOREBOARD (diambil gaya dari 1operator.html) */
+  /* PREVIEW mirip index */
   .scoreboard-wrapper {
     position: relative;
     padding: 10px;
     border-radius: 12px;
-    background: linear-gradient(90deg, var(--home-bg) 0 50%, var(--away-bg) 50% 100%);
+    background: #050505;
     opacity: 1;
     transform: translateY(0);
     transition: opacity 0.4s ease, transform 0.4s ease;
   }
 
   .scoreboard {
-    width: 860px;
+    width: 1000px;
     max-width: 100%;
-    aspect-ratio: 16 / 5;
-    background: #000;
-    display: grid;
-    grid-template-columns: 2fr 1.8fr 1.8fr;
+    aspect-ratio: 1984 / 600;
+    background: transparent;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: 10px;
     position: relative;
-  }
-
-  .time-panel {
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-  }
-
-  .time-top {
-    background: #004535;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-weight: 800;
-    font-size: 32px;
+    color: #ffffff;
   }
 
-  .time-bottom {
-    background: #f8f8f8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 700;
-    color: #111;
-  }
-
-  .teams-panel {
-    background: var(--center-bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    position: relative;
-  }
-
-  .teams-panel::before {
-    content: "";
+  .bars-wrapper {
     position: absolute;
-    right: 0;
-    top: 20%;
-    bottom: 20%;
-    width: 8px;
-    background: #ff4b4b;
-  }
-
-  .team-logo {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 8px rgba(0,0,0,0.4));
-  }
-
-  .score-panel {
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-  }
-
-  .score-row {
+    top: 50%;
+    left: 50%;
+    width: 1984px;
+    height: 200px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 60px;
-    font-weight: 700;
+    justify-content: space-between;
   }
 
-  .score-row.home-row {
-    background: #ff4b4b;
-    color: #fff;
+  .bar-left,
+  .bar-right {
+    width: 972px;
+    height: 200px;
   }
 
-  .score-row.away-row {
-    background: #e5e5e5;
-    color: #000;
-    position: relative;
+  .bar-left {
+    background: linear-gradient(to right, rgba(91,37,37,0) 0%, var(--accent-left) 100%);
   }
 
-  .score-row.away-row::before {
-    content: "";
+  .bar-right {
+    background: linear-gradient(to left, rgba(91,37,37,0) 0%, var(--accent-right) 100%);
+  }
+
+  .epl-logo {
     position: absolute;
-    top: 0;
-    left: 12%;
-    right: 12%;
-    height: 3px;
-    background: #000;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: auto;
+    z-index: 3;
+  }
+
+  .epl-logo img {
+    width: 100%;
+    height: auto;
+    display: block;
   }
 
   .team-name-preview {
     position: absolute;
-    top: 8px;
-    left: 12px;
-    right: 12px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 68px;
     font-weight: 700;
-    color: #fff;
-    text-shadow: 0 0 4px rgba(0,0,0,0.8);
+    z-index: 2;
+    white-space: nowrap;
+  }
+
+  .team-left {
+    left: 120px;
+  }
+
+  .team-right {
+    right: 120px;
+  }
+
+  .score {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 180px;
+    font-weight: 800;
+    padding: 8px 18px;
+    border-radius: 18px;
+    background: transparent;
+  }
+
+  .score-left {
+    left: 50%;
+    transform: translate(calc(-50% - 160px), -50%);
+  }
+
+  .score-right {
+    left: 50%;
+    transform: translate(calc(-50% + 160px), -50%);
+  }
+
+  .time-panel {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    color: #111111;
+    padding: 4px 18px;
+    border-radius: 10px;
+    font-size: 42px;
+    font-weight: 700;
+    z-index: 5;
   }
 
   /* PANEL KONTROL (gaya seperti 1operator) */
@@ -255,26 +255,18 @@
   <!-- PREVIEW SCOREBOARD -->
   <div class="scoreboard-wrapper">
     <div class="scoreboard">
-      <div class="time-panel">
-        <div class="time-top">CHECKVAR</div>
-        <div class="time-bottom" id="timePreview">00:00</div>
+      <div class="bars-wrapper">
+        <div class="bar-left"></div>
+        <div class="bar-right"></div>
       </div>
-
-      <div class="teams-panel">
-        <div class="team-name-preview">
-          <span id="teamLeftPreview">MAN</span>
-          <span id="teamRightPreview">WHU</span>
-        </div>
-        <img id="homeLogo" class="team-logo"
-             src="https://upload.wikimedia.org/wikipedia/id/thumb/0/0c/Liverpool_FC.svg/370px-Liverpool_FC.svg.png"/>
-        <img id="awayLogo" class="team-logo"
-             src="https://upload.wikimedia.org/wikipedia/id/thumb/e/eb/Manchester_City_FC_badge.svg/400px-Manchester_City_FC_badge.svg.png"/>
+      <div class="time-panel" id="timePreview">00:00</div>
+      <div class="epl-logo">
+        <img src="logo/logo-epl.svg" alt="Premier League"/>
       </div>
-
-      <div class="score-panel">
-        <div class="score-row home-row"><span id="homeScorePreview">0</span></div>
-        <div class="score-row away-row"><span id="awayScorePreview">0</span></div>
-      </div>
+      <div class="score score-left" id="homeScorePreview">0</div>
+      <div class="score score-right" id="awayScorePreview">0</div>
+      <div class="team-name-preview team-left" id="teamLeftPreview">MAN</div>
+      <div class="team-name-preview team-right" id="teamRightPreview">WHU</div>
     </div>
   </div>
 
@@ -283,71 +275,64 @@
 
     <div class="controls-section">
       <label>Team Left</label>
-      <input id="teamLeft" type="text" placeholder="MAN" oninput="updatePreview()" />
+      <input id="teamLeft" type="text" placeholder="MAN" oninput="handleChange()" />
     </div>
 
     <div class="controls-section">
       <label>Team Right</label>
-      <input id="teamRight" type="text" placeholder="WHU" oninput="updatePreview()" />
+      <input id="teamRight" type="text" placeholder="WHU" oninput="handleChange()" />
     </div>
 
     <div class="controls-section">
-      <label>Score Left</label>
-      <button class="btn" onclick="changeScore('left', -1)">-</button>
-      <input id="scoreLeft" type="number" value="0" oninput="updatePreview()" />
-      <button class="btn" onclick="changeScore('left', 1)">+</button>
+      <label>Score & Goal</label>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+        <span class="tiny-label">Left</span>
+        <button class="btn" onclick="changeScore('left', -1)">-</button>
+        <input id="scoreLeft" type="number" value="0" oninput="handleChange()" />
+        <button class="btn" onclick="changeScore('left', 1)">+</button>
+        <button class="btn btn-main" onclick="triggerGoal('left')">GOAL L +1</button>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+        <span class="tiny-label">Right</span>
+        <button class="btn" onclick="changeScore('right', -1)">-</button>
+        <input id="scoreRight" type="number" value="0" oninput="handleChange()" />
+        <button class="btn" onclick="changeScore('right', 1)">+</button>
+        <button class="btn btn-main" onclick="triggerGoal('right')">GOAL R +1</button>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; margin-top:4px;">
+        <span class="tiny-label">Durasi goal (detik)</span>
+        <input id="goalDuration" type="number" value="4" min="1" max="10" style="width:70px" />
+      </div>
     </div>
 
     <div class="controls-section">
-      <label>Score Right</label>
-      <button class="btn" onclick="changeScore('right', -1)">-</button>
-      <input id="scoreRight" type="number" value="0" oninput="updatePreview()" />
-      <button class="btn" onclick="changeScore('right', 1)">+</button>
-    </div>
-
-    <div class="controls-section">
-      <label>Color Score Left</label>
-      <input id="scoreLeftColor" type="color" value="#ffffff" onchange="updatePreview()" />
-      <label>Color Right</label>
-      <input id="scoreRightColor" type="color" value="#ffffff" onchange="updatePreview()" />
+      <label>Accent Gradient</label>
+      <span class="tiny-label">Left</span>
+      <input id="scoreLeftColor" type="color" value="#a40606" onchange="handleChange()" />
+      <span class="tiny-label">Right</span>
+      <input id="scoreRightColor" type="color" value="#a40606" onchange="handleChange()" />
+      <span class="tiny-label">gradient tetap transparan</span>
     </div>
 
     <div class="controls-section">
       <label>Time</label>
-      <input id="matchTime" type="text" placeholder="00:00" oninput="updatePreview()" />
-      <span class="tiny-label">Bisa 00:00 atau 45+3, dll (hanya tampilan).</span>
-    </div>
-
-    <div class="controls-section">
-      <label>Logo Home URL</label>
-      <input id="homeLogoInput" type="text" placeholder="https://..."
-             onblur="setLogoFromLink('home', this.value)" />
-    </div>
-
-    <div class="controls-section">
-      <label>Logo Away URL</label>
-      <input id="awayLogoInput" type="text" placeholder="https://..."
-             onblur="setLogoFromLink('away', this.value)" />
+      <input id="timeMinute" type="number" min="0" max="120" value="0" style="width:70px" oninput="handleChange()" /> :
+      <input id="timeSecond" type="number" min="0" max="59" value="0" style="width:70px" oninput="handleChange()" />
+      <span class="tiny-label">format otomatis mm:ss</span>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+        <button class="btn btn-main" onclick="toggleTimer()">Start/Pause</button>
+        <button class="btn" onclick="resetTimer()">Reset</button>
+        <span class="tiny-label" id="timerState"></span>
+      </div>
     </div>
 
     <div class="controls-section">
       <label>Overlay</label>
-      <button class="btn" onclick="setVisibility(false)">Hide</button>
-      <button class="btn" onclick="setVisibility(true)">Unhide</button>
+      <button class="btn" onclick="toggleOverlay()">Hide / Unhide + Replay</button>
       <span id="visibilityState" class="status"></span>
     </div>
 
-    <div class="controls-section">
-      <label>Goal + Anim</label>
-      <button class="btn btn-main" onclick="triggerGoal('left')">GOAL LEFT +1</button>
-      <button class="btn btn-main" onclick="triggerGoal('right')">GOAL RIGHT +1</button>
-      <input id="goalDuration" type="number" value="4" min="1" max="10" style="width:70px" />
-      <span class="tiny-label">durasi animasi (detik)</span>
-    </div>
-
-    <div class="controls-section">
-      <label>Kirim</label>
-      <button class="btn btn-main" onclick="sendUpdate()">KIRIM KE OVERLAY</button>
+    <div class="controls-section" style="justify-content:flex-end;">
       <span id="status" class="status"></span>
     </div>
 
@@ -358,7 +343,11 @@
   let visibleState = true;
   let isCoolingDown = false;
   let lastPayloadKey = "";
+  let pendingSync;
+  let timerInterval = null;
+  let timerRunning = false;
   const COOLDOWN_MS = 900;
+  const SYNC_DELAY = 250;
 
   function changeScore(side, delta) {
     const input = document.getElementById(
@@ -368,7 +357,12 @@
     value += delta;
     if (value < 0) value = 0;
     input.value = value;
+    handleChange();
+  }
+
+  function handleChange() {
     updatePreview();
+    scheduleSync();
   }
 
   function updatePreview() {
@@ -376,9 +370,13 @@
     const teamRight = document.getElementById("teamRight").value.trim() || "WHU";
     const scoreLeft = document.getElementById("scoreLeft").value || "0";
     const scoreRight = document.getElementById("scoreRight").value || "0";
-    const time = document.getElementById("matchTime").value.trim() || "00:00";
-    const colorLeft = document.getElementById("scoreLeftColor").value || "#ffffff";
-    const colorRight = document.getElementById("scoreRightColor").value || "#ffffff";
+    const mm = Math.max(0, parseInt(document.getElementById("timeMinute").value || "0", 10));
+    const ssRaw = parseInt(document.getElementById("timeSecond").value || "0", 10);
+    const ss = Math.min(59, Math.max(0, isNaN(ssRaw) ? 0 : ssRaw));
+    const time = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+    document.getElementById("timeSecond").value = ss;
+    const colorLeft = document.getElementById("scoreLeftColor").value || "#a40606";
+    const colorRight = document.getElementById("scoreRightColor").value || "#a40606";
 
     // update preview team name
     document.getElementById("teamLeftPreview").textContent = teamLeft;
@@ -392,17 +390,9 @@
     document.getElementById("timePreview").textContent = time;
 
     // update preview colors
-    document.querySelector(".score-row.home-row").style.color = colorLeft;
-    document.querySelector(".score-row.away-row").style.color = colorRight;
-  }
-
-  function setLogoFromLink(team, url) {
-    if (!url) return;
-    if (team === "home") {
-      document.getElementById("homeLogo").src = url;
-    } else {
-      document.getElementById("awayLogo").src = url;
-    }
+    const board = document.querySelector(".scoreboard");
+    board?.style.setProperty("--accent-left", colorLeft);
+    board?.style.setProperty("--accent-right", colorRight);
   }
 
   function buildPayload(extra = {}) {
@@ -413,17 +403,28 @@
       scoreRight: document.getElementById("scoreRight").value,
       scoreLeftColor: document.getElementById("scoreLeftColor").value,
       scoreRightColor: document.getElementById("scoreRightColor").value,
-      time: document.getElementById("matchTime").value.trim(),
+      time: `${String(document.getElementById("timeMinute").value || "0").padStart(2, "0")}:${String(document.getElementById("timeSecond").value || "0").padStart(2, "0")}`,
       visible: visibleState,
       ...extra,
     };
+  }
+
+  function scheduleSync(extra, options = {}) {
+    clearTimeout(pendingSync);
+    const payload = buildPayload(extra);
+    pendingSync = setTimeout(() => {
+      sendUpdate(payload, {
+        skipDedup: !!extra,
+        allowDuringCooldown: options.allowDuringCooldown,
+      });
+    }, SYNC_DELAY);
   }
 
   async function sendUpdate(customPayload, options = {}) {
     const statusEl = document.getElementById("status");
     const payload = customPayload || buildPayload();
     const payloadKey = JSON.stringify(payload);
-    const skipDedup = options.skipDedup || payload.eventType === "goal";
+    const skipDedup = options.skipDedup || payload.eventType === "goal" || payload.replayEntrance;
 
     if (!skipDedup && payloadKey === lastPayloadKey) {
       statusEl.textContent = "Belum ada perubahan (tidak dikirim).";
@@ -431,7 +432,7 @@
       return;
     }
 
-    if (isCoolingDown) {
+    if (isCoolingDown && !options.allowDuringCooldown) {
       statusEl.textContent = "Tunggu sebentar biar tidak spam.";
       statusEl.style.color = "#cccccc";
       return;
@@ -471,12 +472,10 @@
     }
   }
 
-  function setVisibility(show, shouldSend = true) {
-    visibleState = !!show;
-    document.getElementById("visibilityState").textContent = show ? "Tampil" : "Sembunyi";
-    if (shouldSend) {
-      sendUpdate(buildPayload());
-    }
+  function toggleOverlay() {
+    visibleState = !visibleState;
+    document.getElementById("visibilityState").textContent = visibleState ? "Tampil" : "Sembunyi";
+    sendUpdate(buildPayload({ replayEntrance: true }));
   }
 
   function triggerGoal(side) {
@@ -490,9 +489,59 @@
     sendUpdate(payload, { skipDedup: true });
   }
 
+  function toggleTimer() {
+    if (timerRunning) {
+      pauseTimer();
+    } else {
+      startTimer();
+    }
+  }
+
+  function startTimer() {
+    if (timerRunning) return;
+    timerRunning = true;
+    document.getElementById("timerState").textContent = "⏱ Running";
+    timerInterval = setInterval(tickTimer, 1000);
+  }
+
+  function pauseTimer() {
+    timerRunning = false;
+    document.getElementById("timerState").textContent = "⏸ Paused";
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  function resetTimer() {
+    document.getElementById("timeMinute").value = 0;
+    document.getElementById("timeSecond").value = 0;
+    handleChange();
+    pauseTimer();
+    document.getElementById("timerState").textContent = "Reset";
+  }
+
+  function tickTimer() {
+    const minuteEl = document.getElementById("timeMinute");
+    const secondEl = document.getElementById("timeSecond");
+    let mm = parseInt(minuteEl.value || "0", 10);
+    let ss = parseInt(secondEl.value || "0", 10);
+
+    ss += 1;
+    if (ss >= 60) {
+      ss = 0;
+      mm += 1;
+    }
+
+    minuteEl.value = mm;
+    secondEl.value = ss;
+    updatePreview();
+    scheduleSync({}, { allowDuringCooldown: true });
+  }
+
   // set awal preview sesuai default input
   updatePreview();
-  setVisibility(true, false);
+  document.getElementById("visibilityState").textContent = "Tampil";
+  document.getElementById("timerState").textContent = "⏸ Paused";
+  scheduleSync();
 </script>
 
 </body>
