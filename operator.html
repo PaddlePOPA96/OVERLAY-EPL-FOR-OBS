@@ -366,6 +366,12 @@
   }
 
   function handleChange() {
+    if (timerRunning) {
+      // jika diubah manual saat jalan, jadikan waktu baru sebagai base dan reset start
+      const { mm, ss } = getTimeParts();
+      timerBaseSeconds = mm * 60 + ss;
+      timerStartMs = Date.now();
+    }
     updatePreview();
     scheduleSync();
   }
@@ -540,7 +546,12 @@
   }
 
   function pauseTimer() {
+    // hitung waktu terakhir lalu simpan sebagai base
+    const total = currentTotalSeconds();
+    timerBaseSeconds = total;
+    timerStartMs = null;
     timerRunning = false;
+    setTimeFieldsFromTotal(total);
     document.getElementById("timerState").textContent = "⏸ Paused";
     clearInterval(timerInterval);
     timerInterval = null;
@@ -557,20 +568,26 @@
     timerBaseSeconds = 0;
   }
 
-  function tickTimer() {
-    const minuteEl = document.getElementById("timeMinute");
-    const secondEl = document.getElementById("timeSecond");
-    let mm = parseInt(minuteEl.value || "0", 10);
-    let ss = parseInt(secondEl.value || "0", 10);
-
-    ss += 1;
-    if (ss >= 60) {
-      ss = 0;
-      mm += 1;
+  function currentTotalSeconds() {
+    const base = timerBaseSeconds || 0;
+    if (timerRunning && timerStartMs) {
+      const elapsed = Math.max(0, Math.floor((Date.now() - timerStartMs) / 1000));
+      return base + elapsed;
     }
+    return base;
+  }
 
-    minuteEl.value = mm;
-    secondEl.value = ss;
+  function setTimeFieldsFromTotal(totalSeconds) {
+    const mm = Math.floor(totalSeconds / 60);
+    const ss = totalSeconds % 60;
+    document.getElementById("timeMinute").value = mm;
+    document.getElementById("timeSecond").value = ss;
+  }
+
+  function tickTimer() {
+    if (!timerRunning) return;
+    const total = currentTotalSeconds();
+    setTimeFieldsFromTotal(total);
     updatePreview();
     // hanya push sekali di start; tick selanjutnya lokal
     if (!liveTickLocal) {
