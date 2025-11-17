@@ -1,11 +1,18 @@
 // netlify/functions/pusher-update.js
 const Pusher = require("pusher");
 
+const requiredEnv = ["PUSHER_APP_ID", "PUSHER_KEY", "PUSHER_SECRET", "PUSHER_CLUSTER"];
+requiredEnv.forEach((name) => {
+  if (!process.env[name]) {
+    throw new Error(`Missing env var ${name}`);
+  }
+});
+
 const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID || "2075303",
-  key: process.env.PUSHER_KEY || "5f34f9c43667f7213afb",
-  secret: process.env.PUSHER_SECRET || "bac0087f9722a2f6256b", // ✅ perbaiki di sini
-  cluster: process.env.PUSHER_CLUSTER || "ap1",
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
+  cluster: process.env.PUSHER_CLUSTER,
   useTLS: true,
 });
 
