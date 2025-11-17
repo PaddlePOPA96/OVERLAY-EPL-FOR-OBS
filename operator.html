@@ -348,6 +348,7 @@
   let timerInterval = null;
   let timerRunning = false;
   let firstSyncSent = false;
+  let liveTickLocal = true;
   const COOLDOWN_MS = 900;
   const SYNC_DELAY = 250;
 
@@ -418,6 +419,7 @@
       sendUpdate(payload, {
         skipDedup: !!extra,
         allowDuringCooldown: options.allowDuringCooldown,
+        silent: options.silent,
       });
     }, SYNC_DELAY);
   }
@@ -431,19 +433,25 @@
     if (!firstSyncSent) {
       firstSyncSent = true;
     } else if (!skipDedup && payloadKey === lastPayloadKey) {
-      statusEl.textContent = "Belum ada perubahan (tidak dikirim).";
-      statusEl.style.color = "#cccccc";
+      if (!options.silent) {
+        statusEl.textContent = "Belum ada perubahan (tidak dikirim).";
+        statusEl.style.color = "#cccccc";
+      }
       return;
     }
 
     if (isCoolingDown && !options.allowDuringCooldown) {
-      statusEl.textContent = "Tunggu sebentar biar tidak spam.";
-      statusEl.style.color = "#cccccc";
+      if (!options.silent) {
+        statusEl.textContent = "Tunggu sebentar biar tidak spam.";
+        statusEl.style.color = "#cccccc";
+      }
       return;
     }
 
-    statusEl.textContent = "Mengirim...";
-    statusEl.style.color = "#cccccc";
+    if (!options.silent) {
+      statusEl.textContent = "Mengirim...";
+      statusEl.style.color = "#cccccc";
+    }
     isCoolingDown = true;
     setTimeout(() => {
       isCoolingDown = false;
@@ -461,18 +469,24 @@
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        statusEl.textContent = "Gagal kirim: " + (json.error || res.status);
-        statusEl.style.color = "#ff6b6b";
+        if (!options.silent) {
+          statusEl.textContent = "Gagal kirim: " + (json.error || res.status);
+          statusEl.style.color = "#ff6b6b";
+        }
         return;
       }
 
       lastPayloadKey = payloadKey;
-      statusEl.textContent = "Terkirim!";
-      statusEl.style.color = "#00ff99";
+      if (!options.silent) {
+        statusEl.textContent = "Terkirim!";
+        statusEl.style.color = "#00ff99";
+      }
     } catch (err) {
       console.error(err);
-      statusEl.textContent = "Error network / CORS";
-      statusEl.style.color = "#ff6b6b";
+      if (!options.silent) {
+        statusEl.textContent = "Error network / CORS";
+        statusEl.style.color = "#ff6b6b";
+      }
     }
   }
 
@@ -503,9 +517,12 @@
 
   function startTimer() {
     if (timerRunning) return;
+    liveTickLocal = true;
     timerRunning = true;
     document.getElementById("timerState").textContent = "⏱ Running";
     timerInterval = setInterval(tickTimer, 1000);
+    // push sekali untuk sinkron awal
+    scheduleSync({}, { allowDuringCooldown: true, silent: false });
   }
 
   function pauseTimer() {
@@ -521,6 +538,7 @@
     handleChange();
     pauseTimer();
     document.getElementById("timerState").textContent = "Reset";
+    liveTickLocal = true;
   }
 
   function tickTimer() {
@@ -538,7 +556,10 @@
     minuteEl.value = mm;
     secondEl.value = ss;
     updatePreview();
-    scheduleSync({}, { allowDuringCooldown: true });
+    // hanya push sekali di start; tick selanjutnya lokal
+    if (!liveTickLocal) {
+      scheduleSync({}, { allowDuringCooldown: true, silent: true });
+    }
   }
 
   // set awal preview sesuai default input
