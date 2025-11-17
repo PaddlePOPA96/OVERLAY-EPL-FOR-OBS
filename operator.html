@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Operator Panel – EPL Scoreboard</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #111111;
+    color: #f5f5f5;
+    padding: 20px;
+  }
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+
+  .row {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+    opacity: 0.8;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="color"] {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #1f1f1f;
+    color: #f5f5f5;
+    box-sizing: border-box;
+  }
+
+  .score-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .score-row input[type="number"] {
+    flex: 1;
+  }
+
+  .score-row button {
+    width: 50px;
+  }
+
+  button {
+    padding: 10px 18px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #00a884;
+    color: white;
+    font-weight: 600;
+  }
+
+  button:active {
+    transform: scale(0.97);
+  }
+
+  .small {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+
+  .status {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<h2>⚽ Operator Panel – EPL Scoreboard</h2>
+
+<div class="row">
+  <label>Team Left</label>
+  <input id="teamLeft" type="text" placeholder="MAN" />
+</div>
+
+<div class="row">
+  <label>Team Right</label>
+  <input id="teamRight" type="text" placeholder="WHU" />
+</div>
+
+<div class="row">
+  <label>Score Left</label>
+  <div class="score-row">
+    <button onclick="changeScore('left', -1)">-</button>
+    <input id="scoreLeft" type="number" value="0" />
+    <button onclick="changeScore('left', 1)">+</button>
+  </div>
+</div>
+
+<div class="row">
+  <label>Score Right</label>
+  <div class="score-row">
+    <button onclick="changeScore('right', -1)">-</button>
+    <input id="scoreRight" type="number" value="0" />
+    <button onclick="changeScore('right', 1)">+</button>
+  </div>
+</div>
+
+<div class="row">
+  <label>Color Score Left</label>
+  <input id="scoreLeftColor" type="color" value="#ffffff" />
+</div>
+
+<div class="row">
+  <label>Color Score Right</label>
+  <input id="scoreRightColor" type="color" value="#ffffff" />
+</div>
+
+<div class="row">
+  <label>Time (MM:SS atau 45+3, dst)</label>
+  <input id="matchTime" type="text" placeholder="00:00" />
+  <div class="small">Untuk sementara manual dulu. Nanti kalau mau, kita bikin Start/Stop timer.</div>
+</div>
+
+<div class="row">
+  <button onclick="sendUpdate()">KIRIM KE OVERLAY</button>
+  <div id="status" class="status"></div>
+</div>
+
+<script>
+  function changeScore(side, delta) {
+    const input = document.getElementById(
+      side === "left" ? "scoreLeft" : "scoreRight"
+    );
+    let value = parseInt(input.value || "0", 10);
+    value += delta;
+    if (value < 0) value = 0;
+    input.value = value;
+  }
+
+  async function sendUpdate() {
+    const payload = {
+      teamLeft: document.getElementById("teamLeft").value.trim(),
+      teamRight: document.getElementById("teamRight").value.trim(),
+      scoreLeft: document.getElementById("scoreLeft").value,
+      scoreRight: document.getElementById("scoreRight").value,
+      scoreLeftColor: document.getElementById("scoreLeftColor").value,
+      scoreRightColor: document.getElementById("scoreRightColor").value,
+      time: document.getElementById("matchTime").value.trim(),
+    };
+
+    const statusEl = document.getElementById("status");
+    statusEl.textContent = "Mengirim...";
+    statusEl.style.color = "#cccccc";
+
+    try {
+      const res = await fetch("/.netlify/functions/pusher-update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        statusEl.textContent = "Gagal kirim: " + (json.error || res.status);
+        statusEl.style.color = "#ff6b6b";
+        return;
+      }
+
+      statusEl.textContent = "Terkirim!";
+      statusEl.style.color = "#00ff99";
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = "Error network / CORS";
+      statusEl.style.color = "#ff6b6b";
+    }
+  }
+</script>
+
+</body>
+</html>

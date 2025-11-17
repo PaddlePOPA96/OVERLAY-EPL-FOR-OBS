@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scoreboard EPL</title>
+  <script src="https://js.pusher.com/8.2/pusher.min.js"></script>
+  <script src="script.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #111111; /* biar sama kayak contoh */
+      font-family: Poppins, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    .slide16-9 {
+      position: relative;
+      width: 1984px;
+      height: 600px;
+      overflow: hidden;
+      margin: 0 auto;
+      background:transparent;
+    }
+
+    .scoreboard {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    /* ============================
+       BAR MERAH KIRI & KANAN
+       (ngikut definisi gradient di SVG)
+       ============================ */
+       .bars-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 1984px;     /* full width area */
+        height: 200px;
+        transform: translate(-50%, -50%) scaleX(0);
+        transform-origin: center;
+        z-index: 1;
+        pointer-events: none;
+        animation: barIn 0.5s 0.3s ease-out forwards;
+        }
+
+    .bar-left,
+    .bar-right {
+    position: absolute;
+    top: 0;
+    width: 972px;
+    height: 200px;
+    border-radius: 0;
+    overflow: hidden;
+    }
+
+    .bar-left {
+      left: 0;
+      background: linear-gradient(
+        to right,
+        rgba(91, 37, 37, 0) 0%,
+        #a40606 100%
+      );
+    }
+
+    .bar-right {
+      right: 0;
+      /* gradient yang sama tapi di-flip */
+      background: linear-gradient(
+        to left,
+        rgba(91, 37, 37, 0) 0%,
+        #a40606 100%
+      );
+    }
+
+    /* ============================
+       LOGO EPL (PALING DEPAN)
+       ============================ */
+    .epl-logo {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 260px;
+      height: auto;
+      z-index: 3;
+      animation: logoIn 0.4s 0s ease-out forwards;
+    }
+
+    .epl-logo img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ============================
+       SCORE & NAMA TIM
+       ============================ */
+    .team-name {
+      font-size: 120px;
+      font-weight: 700;
+      z-index: 2;
+      opacity: 0;
+      animation: textIn 0.4s 0.7s ease-out forwards;
+      white-space: nowrap;
+    }
+
+    .team-left {
+      position: absolute;
+      left: 260px;
+      top: 50%;
+      transform: translateY(-50%);
+      animation-delay: 0.6s;
+
+    }
+
+    .team-right {
+      position: absolute;
+      right: 260px;
+      top: 50%;
+      transform: translateY(-50%);
+      animation-delay: 0.6s;
+
+    }
+
+
+    
+    .score {
+      font-size: 360px;
+      transform-origin: center;
+      font-weight: 700;
+      z-index: 2;
+      opacity: 0;
+      transform: scale(0);
+      animation: scoreIn 0.4s 0.7s ease-out forwards;
+    }
+
+    
+
+    .score-left {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(calc(-50% - 260px), -50%);
+      animation-delay: 0.5s;
+
+    }
+
+    .score-right {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(calc(-50% + 260px), -50%);
+      animation-delay: 0.5s;
+
+    }
+    /* ============================
+      TIME PANEL (EPL STYLE)
+   ============================ */
+
+.time-panel {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  background: #ffffff;
+  color: #111111;
+  padding: 8px 40px;
+  border-radius: 12px;
+  font-size: 80px;
+  font-weight: 700;
+  z-index: 5;
+  opacity: 0;
+  animation: timeIn 0.4s 0.9s ease-out forwards;
+}
+
+/* Animasi dari tengah */
+@keyframes timeIn {
+  0% {
+    transform: translateX(-50%) scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(-50%) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+
+    /* ============================
+       ANIMASI
+       ============================ */
+
+    /* Bar kiri–kanan keluar dari tengah */
+    @keyframes barIn {
+      from {
+        transform: translate(-50%, -50%) scaleX(0);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, -50%) scaleX(1);
+        opacity: 1;
+      }
+    }
+
+    /* Logo muncul dulu */
+    @keyframes logoIn {
+      from {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Score masuk */
+    @keyframes scoreIn {
+      from {
+        opacity: 0;
+        transform: translate(calc(-50% - 260px), -40%) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translate(calc(-50% - 260px), -50%) scale(1);
+      }
+    }
+
+    /* Biar score kanan juga pakai animasi yang sama (kita override transform di inline) */
+    .score-right {
+      animation: scoreRightIn 0.4s 0.7s ease-out forwards;
+    }
+
+    @keyframes scoreRightIn {
+      from {
+        opacity: 0;
+        transform: translate(calc(-50% + 260px), -40%) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translate(calc(-50% + 260px), -50%) scale(1);
+      }
+    }
+
+    /* Nama tim masuk belakangan dikit */
+    @keyframes textIn {
+      from {
+        opacity: 0;
+        transform: translateY(-40%) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+      }
+    }
+
+    @keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="slide16-9">
+    <div class="scoreboard">
+
+      <!-- BAR KIRI & KANAN -->
+      <div class="bars-wrapper">
+        <div class="bar-left"></div>
+        <div class="bar-right"></div>
+      </div>
+      <!-- TIME PANEL -->
+      <div class="time-panel">
+        <div id="match-time">00:00</div>
+      </div>
+      <!-- LOGO EPL DI TENGAH -->
+      <div class="epl-logo">
+        <!-- ini pakai file: /logo/logo-epl.svg -->
+        <img src="logo/logo-epl.svg" alt="Premier League" />
+      </div>
+
+      <!-- SCORE -->
+      <div class="score score-left">0</div>
+      <div class="score score-right">0</div>
+
+      <!-- TEAM NAMES -->
+      <div class="team-name team-left">MAN</div>
+      <div class="team-name team-right">WHU</div>
+
+
+
+    </div>
+  </div>
+</body>
+</html>
