@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Scoreboard Operator</title>
+<style>
+  :root {
+    --center-bg: #ffffff;
+    --score-bg: #f3f3f3;
+    --home-bg: #111111;
+    --away-bg: #111111;
+  }
+
+  * {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  body {
+    margin: 0;
+    background: #111; 
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .overlay-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .scoreboard-wrapper {
+    position: relative;
+    padding: 10px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--home-bg) 0 50%, var(--away-bg) 50% 100%);
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .scoreboard-wrapper.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .scoreboard {
+    width: 860px;
+    max-width: 100%;
+    aspect-ratio: 16 / 5;
+    background: #000;
+    display: grid;
+    grid-template-columns: 2fr 1.8fr 1.8fr;
+    overflow: hidden;
+    border-radius: 8px;
+    position: relative;
+  }
+
+  .time-panel {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .time-top {
+    background: #004535;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 42px;
+  }
+
+  .time-bottom {
+    background: #f8f8f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 700;
+  }
+
+  .teams-panel {
+    background: var(--center-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    position: relative;
+  }
+
+  .teams-panel::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 25%;
+    bottom: 25%;
+    width: 10px;
+    background: #ff4b4b;
+  }
+
+  .team-logo {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px rgba(0,0,0,0.4));
+  }
+
+  .score-panel {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    font-weight: 700;
+  }
+
+  .score-row.home-row {
+    background: #ff4b4b;
+    color: #fff;
+  }
+
+  .score-row.away-row {
+    background: #e5e5e5;
+    color: #000;
+    position: relative;
+  }
+
+  .score-row.away-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 4px;
+    background: #000;
+  }
+
+  .goal-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    background: rgba(255, 0, 0, 0.95);
+    z-index: 2;
+  }
+
+  .goal-overlay span {
+    font-size: 72px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 6px;
+    text-shadow: 0 0 20px rgba(0,0,0,0.9);
+  }
+
+  .goal-overlay.show {
+    animation: goalBg 3s ease-in-out forwards;
+  }
+
+  .goal-overlay.show span {
+    animation: goalText 3s ease-in-out forwards;
+    animation-delay: 0.1s;
+  }
+
+  @keyframes goalBg {
+    0%   { opacity: 0; }
+    10%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes goalText {
+    0%   { opacity: 0; transform: scale(0.4); }
+    20%  { opacity: 1; transform: scale(1.2); }
+    60%  { opacity: 1; transform: scale(1.0); }
+    100% { opacity: 0; transform: scale(1.1); }
+  }
+
+  .controls {
+    width: 860px;
+    max-width: 100%;
+    background: rgba(24,24,24,0.95);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .controls-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+  }
+
+  .controls-section label {
+    min-width: 105px;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .btn {
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: none;
+    background: #ffffff15;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .btn:hover {
+    background: #ffffff30;
+  }
+
+  .btn-main {
+    background: #ff4b4b;
+  }
+
+  .btn-main:hover {
+    background: #ff6b6b;
+  }
+
+  input[type="color"],
+  input[type="number"],
+  input[type="text"] {
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+  }
+
+  input[type="number"],
+  input[type="text"] {
+    background: #2a2a2a;
+    color: #fff;
+    padding: 3px 5px;
+  }
+
+  input[type="number"] {
+    width: 50px;
+  }
+
+  input[type="text"] {
+    width: 220px;
+  }
+
+  .tiny-label {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+
+  .top-controls {
+    display: flex;
+    width: 860px;
+    max-width: 100%;
+    justify-content: flex-end;
+  }
+</style>
+</head>
+<body>
+
+<div class="overlay-container">
+
+  <div class="scoreboard-wrapper" id="scoreboardWrapper">
+    <div class="scoreboard">
+      <div class="time-panel">
+        <div class="time-top">CHECKVAR</div>
+        <div class="time-bottom" id="timeDisplay">00:00</div>
+      </div>
+
+      <div class="teams-panel">
+        <img id="homeLogo" class="team-logo"
+            src="https://upload.wikimedia.org/wikipedia/id/thumb/0/0c/Liverpool_FC.svg/370px-Liverpool_FC.svg.png"/>
+        <img id="awayLogo" class="team-logo"
+            src="https://upload.wikimedia.org/wikipedia/id/thumb/e/eb/Manchester_City_FC_badge.svg/400px-Manchester_City_FC_badge.svg.png"/>
+      </div>
+
+      <div class="score-panel">
+        <div class="score-row home-row"><span id="homeScore">0</span></div>
+        <div class="score-row away-row"><span id="awayScore">0</span></div>
+      </div>
+    </div>
+
+    <div class="goal-overlay" id="goalOverlay"><span id="goalText">GOAL!</span></div>
+  </div>
+
+  <div class="top-controls">
+    <button class="btn btn-main" onclick="toggleOverlay()">Toggle Overlay</button>
+
+  </div>
+
+  <div class="controls">
+    <div class="controls-section">
+      <label>Score Home</label>
+      <button class="btn" onclick="changeScore('home',1)">+1</button>
+      <button class="btn" onclick="changeScore('home',-1)">-1</button>
+      <span class="tiny-label">Klik + akan trigger animasi GOAL HOME</span>
+    </div>
+
+    <div class="controls-section">
+      <label>Score Away</label>
+      <button class="btn" onclick="changeScore('away',1)">+1</button>
+      <button class="btn" onclick="changeScore('away',-1)">-1</button>
+      <span class="tiny-label">Klik + akan trigger animasi GOAL AWAY</span>
+    </div>
+
+    <div class="controls-section">
+      <label>Timer</label>
+      <button class="btn btn-main" onclick="startTimer()">Start</button>
+      <button class="btn" onclick="pauseTimer()">Pause</button>
+      <button class="btn" onclick="resetTimer()">Reset</button>
+    </div>
+
+    <div class="controls-section">
+      <label>Set Time</label>
+      <input type="number" id="manualMinutes" min="0" max="130" value="0"/> :
+      <input type="number" id="manualSeconds" min="0" max="59" value="0"/>
+      <button class="btn" onclick="setManualTime()">Set</button>
+      <span class="tiny-label">Masukkan waktu tampilan (misal 45 : 30)</span>
+    </div>
+
+    <div class="controls-section">
+      <label>Babak</label>
+      <button class="btn" onclick="changePeriod(-1)">-</button>
+      <button class="btn" onclick="changePeriod(1)">+</button>
+      <span id="periodText" class="tiny-label">1st Half</span>
+    </div>
+
+    <div class="controls-section">
+      <label>Warna Home (BG)</label>
+      <input type="color" value="#ff4b4b" onchange="setHomeBgColor(this.value)"/>
+      <label>Teks</label>
+      <input type="color" value="#ffffff" onchange="setHomeTextColor(this.value)"/>
+    </div>
+
+    <div class="controls-section">
+      <label>Warna Away (BG)</label>
+      <input type="color" value="#e5e5e5" onchange="setAwayBgColor(this.value)"/>
+      <label>Teks</label>
+      <input type="color" value="#000000" onchange="setAwayTextColor(this.value)"/>
+    </div>
+
+    <div class="controls-section">
+      <label>BG Home</label>
+      <input type="color" value="#111111" onchange="setHomeBg(this.value)"/>
+      <label>BG Away</label>
+      <input type="color" value="#111111" onchange="setAwayBg(this.value)"/>
+    </div>
+
+    <div class="controls-section">
+      <label>Logo Home URL</label>
+      <input type="text" id="homeLogoInput" placeholder="https://..." 
+             onblur="setLogoFromLink('home', this.value)" />
+      <label>Logo Away URL</label>
+      <input type="text" id="awayLogoInput" placeholder="https://..." 
+             onblur="setLogoFromLink('away', this.value)" />
+      <span class="tiny-label">Masukkan link gambar PNG/JPG/SVG</span>
+    </div>
+  </div>
+</div>
+
+
+<div class="controls-section">
+  <label>Sync</label>
+  <button class="btn" onclick="syncNow()">Sync Semua Client</button>
+  <span class="tiny-label">Tekan kalau ada device / OBS view baru</span>
+</div>
+
+<script src="https://js.pusher.com/8.2/pusher.min.js"></script>
+<script>
+Pusher.logToConsole = false;
+const PUSHER_KEY = "5f34f9c43667f7213afb";
+const PUSHER_CLUSTER = "ap1";
+const channelName = "scoreboard-channel";
+
+const pusher = new Pusher(PUSHER_KEY, {
+  cluster: PUSHER_CLUSTER,
+  forceTLS: true
+});
+const channel = pusher.subscribe(channelName);
+
+// STATE UTAMA DI OPERATOR
+let homeScore = 0, awayScore = 0;
+let elapsedSeconds = 0;
+let timerInterval = null;
+let timerRunning = false;
+let period = 1;
+let lastGoalId = null;
+let overlayVisible = true; // 🔹 state overlay client
+
+function startLocalTimer() {
+  if (timerInterval) return;
+  timerInterval = setInterval(() => {
+    elapsedSeconds++;
+    renderTimer();
+  }, 1000);
+}
+
+function stopLocalTimer() {
+  if (!timerInterval) return;
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+// kirim ke Netlify Function -> Pusher
+async function broadcast(data) {
+  await fetch("/.netlify/functions/trigger", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      app_id: "2075303",
+      key: PUSHER_KEY,
+      secret: "bac0087f9722a2f6256b",
+      cluster: PUSHER_CLUSTER,
+      channel: channelName,
+      event: "update",
+      data
+    })
+  });
+}
+
+// kalau operator juga perlu menerima update (misal kalau buka 2 operator)
+channel.bind("update", (data) => {
+  if (!data) return;
+
+  const prevRunning = timerRunning;
+
+  if (data.homeScore !== undefined) homeScore = data.homeScore;
+  if (data.awayScore !== undefined) awayScore = data.awayScore;
+  if (data.elapsedSeconds !== undefined) elapsedSeconds = data.elapsedSeconds;
+  if (data.timerRunning !== undefined) timerRunning = data.timerRunning;
+  if (data.period !== undefined) period = data.period;
+
+  if (data.homeLogo) document.getElementById("homeLogo").src = data.homeLogo;
+  if (data.awayLogo) document.getElementById("awayLogo").src = data.awayLogo;
+
+  if (data.goalId && data.goalId !== lastGoalId && data.goalTeam) {
+    lastGoalId = data.goalId;
+    showGoal(data.goalTeam);
+  }
+
+  if (timerRunning && !prevRunning) {
+    startLocalTimer();
+  } else if (!timerRunning && prevRunning) {
+    stopLocalTimer();
+  }
+
+  renderAll();
+});
+
+function renderTimer() {
+  const m = Math.floor(elapsedSeconds / 60);
+  const s = elapsedSeconds % 60;
+  document.getElementById("timeDisplay").textContent =
+    `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function renderAll() {
+  document.getElementById("homeScore").textContent = homeScore;
+  document.getElementById("awayScore").textContent = awayScore;
+  document.getElementById("periodText").textContent =
+    period === 1 ? "1st Half" :
+    period === 2 ? "2nd Half" :
+    `Extra ${period-2}`;
+  renderTimer();
+}
+
+function showGoal(team) {
+  const overlay = document.getElementById("goalOverlay");
+  const textEl = document.getElementById("goalText");
+
+  textEl.textContent = "GOAL!";
+
+  overlay.classList.remove("show");
+  void overlay.offsetWidth;
+  overlay.classList.add("show");
+
+  setTimeout(() => {
+    overlay.classList.remove("show");
+  }, 3000);
+}
+
+// TIMER & SCORE (hanya operator yang manggil)
+function startTimer() {
+  if (timerRunning) return;
+  timerRunning = true;
+  startLocalTimer();
+  broadcast({ homeScore, awayScore, elapsedSeconds, timerRunning, period });
+}
+
+function pauseTimer() {
+  if (!timerRunning) return;
+  timerRunning = false;
+  stopLocalTimer();
+  broadcast({ homeScore, awayScore, elapsedSeconds, timerRunning, period });
+}
+
+function resetTimer() {
+  elapsedSeconds = 0;
+  renderTimer();
+  broadcast({ homeScore, awayScore, elapsedSeconds, timerRunning, period });
+}
+
+function changeScore(team, delta) {
+  if (team === "home") {
+    homeScore = Math.max(0, homeScore + delta);
+  } else {
+    awayScore = Math.max(0, awayScore + delta);
+  }
+
+  const payload = { homeScore, awayScore, elapsedSeconds, timerRunning, period };
+
+  if (delta > 0) {
+    payload.goalTeam = team;
+    payload.goalId = Date.now();
+    lastGoalId = payload.goalId;
+    showGoal(team);
+  }
+
+  broadcast(payload);
+  renderAll();
+}
+
+function changePeriod(delta) {
+  period = Math.max(1, period + delta);
+
+  if (period === 1) {
+    elapsedSeconds = 0;
+  } else if (period === 2) {
+    elapsedSeconds = 45 * 60;
+  } else if (period === 3) {
+    elapsedSeconds = 90 * 60;
+  } else {
+    elapsedSeconds = 105 * 60;
+  }
+
+  broadcast({ homeScore, awayScore, elapsedSeconds, timerRunning, period });
+  renderAll();
+}
+
+
+//syncnow
+function syncNow() {
+  broadcast({
+    homeScore,
+    awayScore,
+    elapsedSeconds,
+    timerRunning,
+    period,
+    homeLogo: document.getElementById("homeLogo").src,
+    awayLogo: document.getElementById("awayLogo").src,
+  });
+}
+
+
+// LOGO + WARNA
+
+function setLogoFromLink(team, url) {
+  if (!url) return;
+  if (team === "home") {
+    document.getElementById("homeLogo").src = url;
+    broadcast({ homeScore, awayScore, elapsedSeconds, timerRunning, period, homeLogo: url });
+  } else {
+    document.getElementById("awayLogo").src = url;
+    broadcast({ homeScore, awayScore, elapsedSeconds, timerRunning, period, awayLogo: url });
+  }
+}
+
+function setHomeBgColor(val){document.querySelector(".score-row.home-row").style.background=val;}
+function setAwayBgColor(val){document.querySelector(".score-row.away-row").style.background=val;}
+function setHomeTextColor(val){document.querySelector(".score-row.home-row").style.color=val;}
+function setAwayTextColor(val){document.querySelector(".score-row.away-row").style.color=val;}
+function setHomeBg(val){document.documentElement.style.setProperty("--home-bg",val);}
+function setAwayBg(val){document.documentElement.style.setProperty("--away-bg",val);}
+
+function setManualTime(){
+  const m = +document.getElementById("manualMinutes").value;
+  const s = +document.getElementById("manualSeconds").value;
+  elapsedSeconds = (m*60) + s;
+  renderTimer();
+  broadcast({homeScore,awayScore,elapsedSeconds,timerRunning,period});
+}
+
+window.addEventListener("keydown", e => {
+  if (e.key === "h" || e.key === "H") toggleOverlay();
+});
+
+function toggleOverlay() {
+  const wrapper = document.getElementById("scoreboardWrapper");
+  overlayVisible = !overlayVisible;
+
+  if (!overlayVisible) {
+    wrapper.classList.add("hidden");
+    broadcast({ overlayVisible: false });
+  } else {
+    wrapper.classList.remove("hidden");
+    wrapper.classList.remove("animate-in");
+    void wrapper.offsetWidth;
+    wrapper.classList.add("animate-in");
+
+    const introId = Date.now();
+
+    broadcast({
+      overlayVisible: true,
+      introId
+    });
+
+    setTimeout(() => {
+      wrapper.classList.remove("animate-in");
+    }, 1200);
+  }
+}
+
+renderAll();
+</script>
+
+</body>
+</html>

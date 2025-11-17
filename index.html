@@ -30,6 +30,54 @@
       align-items: center;
       justify-content: center;
       color: #ffffff;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .slide16-9.hide-scoreboard .scoreboard,
+    .slide16-9.goal-mode .scoreboard {
+      opacity: 0;
+      transform: scale(0.98);
+      pointer-events: none;
+    }
+
+    .goal-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85));
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .slide16-9.goal-mode .goal-overlay {
+      opacity: 1;
+    }
+
+    .goal-box {
+      text-align: center;
+      padding: 30px 50px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #a40606, #d98324);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .goal-label {
+      font-size: 200px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      margin: 0;
+      line-height: 0.9;
+    }
+
+    .goal-team {
+      margin-top: 10px;
+      font-size: 90px;
+      font-weight: 700;
     }
 
     /* ============================
@@ -308,8 +356,12 @@
       <div class="team-name team-left">MAN</div>
       <div class="team-name team-right">WHU</div>
 
-
-
+    </div>
+    <div id="goal-overlay" class="goal-overlay">
+      <div class="goal-box">
+        <div class="goal-label">GOAL!</div>
+        <div id="goal-team-name" class="goal-team">TEAM</div>
+      </div>
     </div>
   </div>
 </body>

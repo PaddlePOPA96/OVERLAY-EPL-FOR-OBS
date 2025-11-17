@@ -279,7 +279,7 @@
   </div>
 
   <!-- PANEL KONTROL -->
-  <div class="controls">
+<div class="controls">
 
     <div class="controls-section">
       <label>Team Left</label>
@@ -331,6 +331,21 @@
     </div>
 
     <div class="controls-section">
+      <label>Overlay</label>
+      <button class="btn" onclick="setVisibility(false)">Hide</button>
+      <button class="btn" onclick="setVisibility(true)">Unhide</button>
+      <span id="visibilityState" class="status"></span>
+    </div>
+
+    <div class="controls-section">
+      <label>Goal + Anim</label>
+      <button class="btn btn-main" onclick="triggerGoal('left')">GOAL LEFT +1</button>
+      <button class="btn btn-main" onclick="triggerGoal('right')">GOAL RIGHT +1</button>
+      <input id="goalDuration" type="number" value="4" min="1" max="10" style="width:70px" />
+      <span class="tiny-label">durasi animasi (detik)</span>
+    </div>
+
+    <div class="controls-section">
       <label>Kirim</label>
       <button class="btn btn-main" onclick="sendUpdate()">KIRIM KE OVERLAY</button>
       <span id="status" class="status"></span>
@@ -340,6 +355,11 @@
 </div>
 
 <script>
+  let visibleState = true;
+  let isCoolingDown = false;
+  let lastPayloadKey = "";
+  const COOLDOWN_MS = 900;
+
   function changeScore(side, delta) {
     const input = document.getElementById(
       side === "left" ? "scoreLeft" : "scoreRight"
@@ -385,8 +405,8 @@
     }
   }
 
-  async function sendUpdate() {
-    const payload = {
+  function buildPayload(extra = {}) {
+    return {
       teamLeft: document.getElementById("teamLeft").value.trim(),
       teamRight: document.getElementById("teamRight").value.trim(),
       scoreLeft: document.getElementById("scoreLeft").value,
@@ -394,11 +414,35 @@
       scoreLeftColor: document.getElementById("scoreLeftColor").value,
       scoreRightColor: document.getElementById("scoreRightColor").value,
       time: document.getElementById("matchTime").value.trim(),
+      visible: visibleState,
+      ...extra,
     };
+  }
 
+  async function sendUpdate(customPayload, options = {}) {
     const statusEl = document.getElementById("status");
+    const payload = customPayload || buildPayload();
+    const payloadKey = JSON.stringify(payload);
+    const skipDedup = options.skipDedup || payload.eventType === "goal";
+
+    if (!skipDedup && payloadKey === lastPayloadKey) {
+      statusEl.textContent = "Belum ada perubahan (tidak dikirim).";
+      statusEl.style.color = "#cccccc";
+      return;
+    }
+
+    if (isCoolingDown) {
+      statusEl.textContent = "Tunggu sebentar biar tidak spam.";
+      statusEl.style.color = "#cccccc";
+      return;
+    }
+
     statusEl.textContent = "Mengirim...";
     statusEl.style.color = "#cccccc";
+    isCoolingDown = true;
+    setTimeout(() => {
+      isCoolingDown = false;
+    }, COOLDOWN_MS);
 
     try {
       const res = await fetch("/.netlify/functions/pusher-update", {
@@ -417,6 +461,7 @@
         return;
       }
 
+      lastPayloadKey = payloadKey;
       statusEl.textContent = "Terkirim!";
       statusEl.style.color = "#00ff99";
     } catch (err) {
@@ -426,8 +471,28 @@
     }
   }
 
+  function setVisibility(show, shouldSend = true) {
+    visibleState = !!show;
+    document.getElementById("visibilityState").textContent = show ? "Tampil" : "Sembunyi";
+    if (shouldSend) {
+      sendUpdate(buildPayload());
+    }
+  }
+
+  function triggerGoal(side) {
+    changeScore(side, 1);
+    const duration = parseInt(document.getElementById("goalDuration").value, 10) || 4;
+    const payload = buildPayload({
+      eventType: "goal",
+      goalSide: side,
+      goalDuration: duration,
+    });
+    sendUpdate(payload, { skipDedup: true });
+  }
+
   // set awal preview sesuai default input
   updatePreview();
+  setVisibility(true, false);
 </script>
 
 </body>

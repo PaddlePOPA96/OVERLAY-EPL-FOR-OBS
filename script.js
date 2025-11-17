@@ -12,6 +12,9 @@ const pusher = new Pusher("5f34f9c43667f7213afb", {
 // Subscribe ke channel
 const channel = pusher.subscribe("scoreboard-channel");
 
+let goalTimeout;
+let lastVisibility = true;
+
 // Handler ketika ada event "update" dari Netlify Function
 channel.bind("update", function (data) {
   console.log("Pusher update:", data);
@@ -22,6 +25,9 @@ channel.bind("update", function (data) {
   const scoreLeftEl = document.querySelector(".score-left");
   const scoreRightEl = document.querySelector(".score-right");
   const timeEl = document.querySelector("#match-time");
+  const slideEl = document.querySelector(".slide16-9");
+  const goalOverlay = document.getElementById("goal-overlay");
+  const goalTeamEl = document.getElementById("goal-team-name");
 
   // Safety check
   if (!teamLeftEl || !teamRightEl || !scoreLeftEl || !scoreRightEl || !timeEl) {
@@ -60,4 +66,52 @@ channel.bind("update", function (data) {
   if (typeof data.scoreRightColor === "string" && data.scoreRightColor.trim() !== "") {
     scoreRightEl.style.color = data.scoreRightColor;
   }
+
+  if (typeof data.visible === "boolean") {
+    lastVisibility = data.visible;
+  }
+  applyVisibility(slideEl, lastVisibility);
+
+  if (data.eventType === "goal") {
+    playGoalAnimation({
+      goalSide: data.goalSide,
+      goalDuration: data.goalDuration,
+      slideEl,
+      goalOverlay,
+      goalTeamEl,
+      teamLeftEl,
+      teamRightEl,
+    });
+  }
 });
+
+function applyVisibility(slideEl, isVisible) {
+  if (!slideEl) return;
+  slideEl.classList.toggle("hide-scoreboard", !isVisible);
+}
+
+function playGoalAnimation({
+  goalSide,
+  goalDuration,
+  slideEl,
+  goalOverlay,
+  goalTeamEl,
+  teamLeftEl,
+  teamRightEl,
+}) {
+  if (!slideEl || !goalOverlay || !goalTeamEl) return;
+
+  const teamName =
+    goalSide === "right" ? teamRightEl?.textContent : teamLeftEl?.textContent;
+
+  goalTeamEl.textContent = (teamName || "GOAL").toUpperCase();
+
+  slideEl.classList.add("goal-mode");
+
+  clearTimeout(goalTimeout);
+  const durationMs = (Number(goalDuration) || 4) * 1000;
+  goalTimeout = setTimeout(() => {
+    slideEl.classList.remove("goal-mode");
+    applyVisibility(slideEl, lastVisibility);
+  }, durationMs);
+}
