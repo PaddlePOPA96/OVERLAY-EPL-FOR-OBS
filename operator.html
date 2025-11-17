@@ -136,6 +136,7 @@
     padding: 8px 18px;
     border-radius: 18px;
     background: transparent;
+    color: #ffffff;
   }
 
   .score-left {
@@ -346,6 +347,7 @@
   let pendingSync;
   let timerInterval = null;
   let timerRunning = false;
+  let firstSyncSent = false;
   const COOLDOWN_MS = 900;
   const SYNC_DELAY = 250;
 
@@ -426,7 +428,9 @@
     const payloadKey = JSON.stringify(payload);
     const skipDedup = options.skipDedup || payload.eventType === "goal" || payload.replayEntrance;
 
-    if (!skipDedup && payloadKey === lastPayloadKey) {
+    if (!firstSyncSent) {
+      firstSyncSent = true;
+    } else if (!skipDedup && payloadKey === lastPayloadKey) {
       statusEl.textContent = "Belum ada perubahan (tidak dikirim).";
       statusEl.style.color = "#cccccc";
       return;

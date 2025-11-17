@@ -89,6 +89,7 @@ function applyVisibility(slideEl, isVisible, replay) {
   slideEl.classList.toggle("hide-scoreboard", !isVisible);
 
   if (isVisible && replay) {
+    slideEl.classList.remove("goal-mode");
     replayEntranceAnimations();
   }
 }
